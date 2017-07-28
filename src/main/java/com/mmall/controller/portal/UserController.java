@@ -1,5 +1,12 @@
 package com.mmall.controller.portal;
 
+import com.mmall.common.Const;
+import com.mmall.common.ServerResponse;
+import com.mmall.dao.UserMapper;
+import com.mmall.pojo.User;
+import com.mmall.service.IUserService;
+import com.sun.org.apache.xpath.internal.operations.String;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +22,11 @@ import javax.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/user/")
 public class UserController {
+
+    @Autowired
+    private IUserService iUserService;
+
+
     /**
      *用户登录
      * @param username
@@ -24,9 +36,30 @@ public class UserController {
      */
     @RequestMapping(value="login.do",method = RequestMethod.POST)
     @ResponseBody
-    public Object login(String username, String password, HttpSession session){
-        //service-->mybatis-->dao
+    public ServerResponse<User> login(String username, String password, HttpSession session){
+        ServerResponse<User> response = iUserService.login(username,password);
+        if (response.isSuccess()){
+            session.setAttribute(Const.CURRENT_USER,response.getData());
+        }
 
-        return null;
+        return response;
+    }
+
+    @RequestMapping(value="login.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String> logout(HttpSession session){
+        return ServerResponse.createBySuccess();
+    }
+
+    @RequestMapping(value="register.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String> register(User user){
+        return iUserService.register(user);
+    }
+
+    @RequestMapping(value="check_valid.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String> checkVaild(String str,String type){
+        return iUserService.checkValid(str,type);
     }
 }
